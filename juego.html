@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simon Dice</title>
+    <style>
+      body {
+        margin: 0;
+        background: #dedede;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .gameboard {
+        height: 100vh;
+        width: 100vh;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        max-height: 60vh;
+        max-width: 60vh;
+      }
+
+      .color {
+        width: 50%;
+        height: 50%;
+        display: inline-block;
+      }
+
+      .left {
+        float: left;
+      }
+
+      .right {
+        float: left;
+      }
+
+      .violeta {
+        background: #af4d98 ;
+      }
+
+      .violeta.light {
+        background: #ebb9df;
+      }
+
+      .rosa {
+        background: #D66BA0;
+      }
+
+      .rosa.light {
+        background: #d99cba;
+      }
+
+      .rosita {
+        background: #E5A9A9;
+      }
+
+      .rosita.light {
+        background: #fac8c8;
+      }
+
+      .amarillo {
+        background: #f5dfa6;
+      }
+
+      .amarillo.light {
+        background: #f5e9c9;
+      }
+
+      .btn-start {
+        width: 420px;
+        height: 100px;
+        background: #ecf0f1;
+        color: #2c3e50;
+        font-size: 3em;
+        position: absolute;
+        top: calc(50% - 50px);
+        left: calc(50% - 210px);
+        cursor: pointer;
+        border: none;
+        border-bottom: 4px solid #c4c6c7;
+        border-radius: 8px;
+        transition: .5s;
+        outline: none;
+      }
+
+      .btn-start:hover {
+        color: #ecf0f1;
+        background: #2c3e50;
+        border-bottom: 4px solid #1f3346;
+      }
+
+      .btn-start:active {
+        transform: scale(.95);
+      }
+
+      .hide {
+        display: none; /* 'apagar' un elemento */
+      }
+
+      *{
+        font-family: 'Segoe UI'
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="gameboard">
+      <div id="violeta" class="color violeta left" data-color="violeta"></div>
+      <div id="rosa" class="color rosa right" data-color="rosa"></div>
+      <div id="rosita" class="color rosita left" data-color="rosita"></div>
+      <div id="amarillo" class="color amarillo right" data-color="amarillo"></div>
+      <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">¡Empezar a jugar!</button>
+    </div>
+    <script src= "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script>
+      // botones
+      const violeta = document.getElementById('violeta')
+      const rosa = document.getElementById('rosa')
+      const rosita = document.getElementById('rosita')
+      const amarillo = document.getElementById('amarillo')
+      const btnEmpezar = document.getElementById('btnEmpezar') // funcion que recibe un string con el id del elemento que queremos obtener
+      const ULT_NIVEL = 5
+
+        swal ('¡Bienvenido!', 'Simón dice - 5 niveles', 'info')
+
+      class Juego { // va a tener toda la logica del juego
+        constructor() {
+          this.inicializar = this.inicializar.bind(this)
+          this.inicializar() //llamar function
+          this.generarSecuencia()
+          setTimeout(this.siguienteNivel, 300)
+        }
+
+        inicializar() { // inicializar function
+          this.siguienteNivel = this.siguienteNivel.bind(this)
+          this.elegirColor = this.elegirColor.bind(this)
+          this.toggleBtnEmpezar()
+          this.nivel = 1
+          this.colores = {
+            violeta,
+            rosa,
+            rosita,
+            amarillo
+          }
+        }
+
+        toggleBtnEmpezar() {
+          if (btnEmpezar.classList.contains('hide')) {
+            btnEmpezar.classList.remove('hide')
+          } else {
+            btnEmpezar.classList.add('hide')
+          }
+        }
+
+        generarSecuencia() {
+          this.secuencia = new Array(ULT_NIVEL).fill(0).map(n => Math.floor (Math.random() * 4)) // 10 elementos tiene el Array. fill define a todos en 0. map no funciona con elementos no definidos. multi x 4, da valores entre 0 y < 4
+        }
+
+        siguienteNivel() {
+          this.subnivel = 0
+          this.iluminarSecuencia()// cada vez que se llegue a un nuevo nivel se va a iluminar la secuencia
+          this.agregarClick()
+        }
+
+        transNumCol (numero) {
+          switch (numero) {
+            case 0:
+              return 'violeta'
+            case 1:
+              return 'rosa'
+            case 2:
+              return 'rosita'
+            case 3:
+              return 'amarillo'
+          }
+        }
+
+        transColNum (color) {
+          switch (color) {
+            case 'violeta':
+              return 0
+            case 'rosa':
+              return 1
+            case 'rosita':
+              return 2
+            case 'amarillo':
+              return 3
+          }
+        }
+
+        iluminarSecuencia() { // recorrer la secuencia hasta el nivel en donde este el usu
+          for (let i = 0; i < this.nivel; i++) { // por cada numero de la secuencia la muestra en color
+            const color = this.transNumCol(this.secuencia[i]) // let hace que la var color se mantenga para estos ciclos
+            setTimeout(() => this.iluminarColor(color), 700 * i)
+          }
+        }
+
+        iluminarColor(color) {
+          this.colores[color].classList.add('light')
+          setTimeout(() => this.apagarColor(color), 300)
+        }
+
+        apagarColor(color){
+          this.colores[color].classList.remove('light')
+        }
+
+        agregarClick() {
+          this.colores.violeta.addEventListener('click', this.elegirColor)
+          this.colores.amarillo.addEventListener('click', this.elegirColor)
+          this.colores.rosa.addEventListener('click', this.elegirColor)
+          this.colores.rosita.addEventListener('click', this.elegirColor)
+        }
+
+        eliminarEveClick() {
+          this.colores.violeta.removeEventListener('click', this.elegirColor)
+          this.colores.amarillo.removeEventListener('click', this.elegirColor)
+          this.colores.rosa.removeEventListener('click', this.elegirColor)
+          this.colores.rosita.removeEventListener('click', this.elegirColor)
+        }
+
+        elegirColor(ev) {
+          const nombreColor = ev.target.dataset.color // esto es el color seleccionado
+          const numeroColor = this.transColNum(nombreColor)
+          this.iluminarColor(nombreColor)
+          if (numeroColor === this.secuencia[this.subnivel]) {
+            this.subnivel++
+            if (this.subnivel === this.nivel){
+              this.nivel++
+              this.eliminarEveClick()
+              if (this.nivel === (ULT_NIVEL + 1)){
+                this.gano()
+              } else {
+                setTimeout(this.siguienteNivel, 900)
+
+              }
+
+            }
+          } else {
+            this.perdio()
+          }
+        }
+
+        gano(){
+          swal ('¡Ganaste!', 'Felicitaciones ¡juega otra vez!', 'success') .then(this.inicializar)
+        }
+
+        perdio(){
+          swal ('Has perdido...', 'No te preocupes ¡juega otra vez!', 'error') .then(() => {
+              this.eliminarEveClick()
+              this.inicializar()
+          })
+        }
+
+
+      }
+
+      function empezarJuego() {
+        window.juego = new Juego()
+      }
+    </script>
+  </body>
+</html>
